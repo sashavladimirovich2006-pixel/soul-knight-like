@@ -12,6 +12,9 @@ jobs:
   fmt:
     name: fmt
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -25,7 +28,23 @@ jobs:
 
       # Formatting needs no dependencies and no build, so it fails fast.
       - name: Check formatting
-        run: cargo fmt --all -- --check
+        run: |
+          set -o pipefail
+          cargo fmt --all -- --check 2>&1 | tee fmt-output.log
+
+      - name: Report failure on the pull request
+        if: failure() && github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          {
+            echo '### fmt failed'
+            echo
+            echo '```diff'
+            head -n 80 fmt-output.log 2>/dev/null || echo 'no output captured'
+            echo '```'
+          } > report.md
+          gh pr comment "${{ github.event.pull_request.number }}" --body-file report.md
 
   deps:
     name: resolve dependencies

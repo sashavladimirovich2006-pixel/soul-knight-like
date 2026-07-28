@@ -29,7 +29,9 @@ fn spawn_camera(mut commands: Commands) {
     commands.spawn((
         Camera2d,
         Projection::Orthographic(OrthographicProjection {
-            scaling_mode: ScalingMode::FixedVertical { viewport_height: VIEWPORT_HEIGHT },
+            scaling_mode: ScalingMode::FixedVertical {
+                viewport_height: VIEWPORT_HEIGHT,
+            },
             ..OrthographicProjection::default_2d()
         }),
         MainCamera,
@@ -49,10 +51,16 @@ mod tests {
         app.add_plugins(MinimalPlugins).add_plugins(CameraPlugin);
         app.update();
 
-        let mut query = app.world_mut().query_filtered::<&Projection, With<MainCamera>>();
+        let mut query = app
+            .world_mut()
+            .query_filtered::<&Projection, With<MainCamera>>();
         let projections: Vec<&Projection> = query.iter(app.world()).collect();
 
-        assert_eq!(projections.len(), 1, "exactly one gameplay camera is expected");
+        assert_eq!(
+            projections.len(),
+            1,
+            "exactly one gameplay camera is expected"
+        );
 
         match projections[0] {
             Projection::Orthographic(orthographic) => match orthographic.scaling_mode {
