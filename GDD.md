@@ -94,7 +94,20 @@ Four archetypes for the MVP, all driven by a small state machine:
 - The shop offers two to three slots of permanent upgrades.
 - One or two unlockable characters with different starting stats and weapons.
 
-## 10. Technical constraints
+## 10. Art and resolution
+
+- **Sampling**: textures use nearest-neighbour filtering, configured once for
+  the whole app. Linear filtering would blur upscaled pixel art.
+- **Unit convention**: one world unit equals one texture pixel. Positions,
+  speeds and collider sizes in data files are therefore expressed in pixels.
+- **Vertical resolution**: the camera shows a fixed 360 world units of height
+  (`VIEWPORT_HEIGHT`), scaled up to fill the window. Sprite sizes on screen
+  stay consistent across window sizes and display resolutions.
+- **Aspect ratio**: width follows the window aspect ratio. Wider displays see
+  more of the room horizontally rather than a stretched or cropped image, so
+  rooms must not rely on a fixed horizontal field of view for fairness.
+
+## 11. Technical constraints
 
 - Engine: Bevy, pinned to `0.19` in `Cargo.toml`. Versions are never mixed.
 - Architecture is ECS first: components are plain data, systems hold logic,
