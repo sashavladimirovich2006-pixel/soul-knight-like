@@ -1,0 +1,22 @@
+[package]
+name = "soul_knight_like"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+# The Bevy version is pinned deliberately: the API changes between minor
+# releases, so versions must never be mixed. Verify every API call against
+# docs.rs for this exact version before using it.
+[dependencies]
+bevy = { version = "0.19", default-features = false, features = [
+    "2d",
+    "bevy_state",
+] }
+
+# Faster iteration builds: our own crate stays lightly optimised while
+# dependencies are optimised once and then cached.
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3

@@ -1,0 +1,15 @@
+/target
+**/*.rs.bk
+*.pdb
+
+# OS noise
+.DS_Store
+Thumbs.db
+
+# Editors
+/.idea
+/.vscode
+
+# Art source files, keep only exported assets in the repo
+*.blend1
+*.aseprite~
