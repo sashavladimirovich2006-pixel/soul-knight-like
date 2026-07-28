@@ -9,9 +9,50 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  check:
-    name: fmt / clippy / test
+  fmt:
+    name: fmt
     runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Rust
+        run: |
+          rustup update stable
+          rustup default stable
+          rustup component add rustfmt
+          rustc --version
+
+      # Formatting needs no dependencies and no build, so it fails fast.
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+  deps:
+    name: resolve dependencies
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Rust
+        run: |
+          rustup update stable
+          rustup default stable
+          rustc --version
+          cargo --version
+
+      # Separated on purpose: if the pinned engine version, its feature set or
+      # the MSRV is wrong, it surfaces here instead of inside a long build.
+      - name: Fetch dependencies
+        run: cargo fetch --locked || cargo fetch
+
+      - name: Show resolved bevy version
+        run: cargo tree --depth 1 --package soul_knight_like
+
+  clippy:
+    name: clippy
+    runs-on: ubuntu-latest
+    needs: [fmt, deps]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -21,15 +62,12 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libasound2-dev libudev-dev
 
-      # Bevy's MSRV tracks the latest stable Rust, so do not rely on whatever
-      # toolchain the runner image happens to ship with.
       - name: Set up Rust
         run: |
           rustup update stable
           rustup default stable
-          rustup component add rustfmt clippy
+          rustup component add clippy
           rustc --version
-          cargo --version
 
       - name: Cache cargo artifacts
         uses: actions/cache@v4
@@ -38,14 +76,40 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.toml') }}
-          restore-keys: ${{ runner.os }}-cargo-
-
-      - name: Format
-        run: cargo fmt --all -- --check
+          key: ${{ runner.os }}-clippy-${{ hashFiles('**/Cargo.toml') }}
+          restore-keys: ${{ runner.os }}-clippy-
 
       - name: Clippy
         run: cargo clippy --all-targets -- -D warnings
+
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    needs: [fmt, deps]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libasound2-dev libudev-dev
+
+      - name: Set up Rust
+        run: |
+          rustup update stable
+          rustup default stable
+          rustc --version
+
+      - name: Cache cargo artifacts
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-test-${{ hashFiles('**/Cargo.toml') }}
+          restore-keys: ${{ runner.os }}-test-
 
       - name: Test
         run: cargo test
