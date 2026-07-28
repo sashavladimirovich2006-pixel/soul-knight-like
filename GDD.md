@@ -29,7 +29,9 @@ online leaderboards.
 
 ## 3. Controls
 
-Twin-stick layout:
+The game targets desktop with a keyboard and a mouse. The layout is twin-stick
+in the genre sense: moving and aiming are independent, so the player can
+retreat while still shooting. No gamepad support is planned for the MVP.
 
 | Input | Action |
 | --- | --- |
@@ -43,6 +45,13 @@ Twin-stick layout:
 
 ## 4. Player
 
+- **Movement**: a constant top speed of 120 world units, that is 120 pixels,
+  per second, with no acceleration or friction. Arcade-style instant response
+  matters more than physical plausibility here. Diagonal movement is
+  normalised, so holding two keys is never faster than holding one.
+- **Aiming**: the player always faces the cursor, independently of the movement
+  direction. Aim is stored as a unit vector so weapons never touch the cursor
+  or the window directly.
 - **Health**: lost permanently for the run, restored only by healing pickups.
 - **Armour**: absorbs damage before health and regenerates after a few seconds
   without taking damage.
@@ -107,6 +116,9 @@ Four archetypes for the MVP, all driven by a small state machine:
 - Systems communicate through events such as `DamageDealt`, `EntityDied` and
   `ItemPickedUp` rather than calling each other directly.
 - Randomness always comes from a seeded generator stored in a resource, so runs
-  are deterministic and testable without a renderer.
+  are deterministic and testable without a renderer. The generator is `rand`
+  with `SmallRng`, approved in issue #2.
+- Content and balance are authored in RON and deserialised with `serde`,
+  approved in issue #9.
 - Pure logic (dungeon generation, drop tables, damage calculation) lives in
   modules that do not depend on Bevy and is covered by unit tests.

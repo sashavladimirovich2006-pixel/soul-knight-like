@@ -5,12 +5,14 @@
 //! own modules so it can be unit tested without a renderer.
 
 mod app_state;
+mod logic;
 mod plugins;
 
 use bevy::prelude::*;
 
 use crate::app_state::AppStatePlugin;
 use crate::plugins::camera::CameraPlugin;
+use crate::plugins::player::PlayerPlugin;
 
 fn main() {
     App::new()
@@ -21,6 +23,6 @@ fn main() {
             }),
             ..default()
         }))
-        .add_plugins((AppStatePlugin, CameraPlugin))
+        .add_plugins((AppStatePlugin, CameraPlugin, PlayerPlugin))
         .run();
 }
