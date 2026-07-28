@@ -60,10 +60,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # Bevy's default platform features build against ALSA, udev, Wayland and
+      # xkbcommon, whose build scripts fail without the development headers.
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libasound2-dev libudev-dev
+          sudo apt-get install -y \
+            libasound2-dev \
+            libudev-dev \
+            libwayland-dev \
+            libxkbcommon-dev \
+            pkg-config
 
       - name: Set up Rust
         run: |
@@ -96,7 +103,7 @@ jobs:
             echo '### clippy failed'
             echo
             echo '```'
-            grep -E 'error|warning' cargo-output.log | tail -n 40 2>/dev/null || echo 'no cargo output captured'
+            grep -E 'error|warning|panicked' cargo-output.log | tail -n 40 2>/dev/null || echo 'no cargo output captured'
             echo '```'
           } > report.md
           gh pr comment "${{ github.event.pull_request.number }}" --body-file report.md
@@ -115,7 +122,12 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libasound2-dev libudev-dev
+          sudo apt-get install -y \
+            libasound2-dev \
+            libudev-dev \
+            libwayland-dev \
+            libxkbcommon-dev \
+            pkg-config
 
       - name: Set up Rust
         run: |
